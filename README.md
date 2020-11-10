@@ -2,7 +2,7 @@
 
 Adds subscription services as stitched services alongside a Federated Graph, as a go-between until Federation supports subscriptions.
 
-Supports `subscriptions-transport-ws`. `graphql-ws` is also be possible, but it is not natively compatible with Apollo Client/Server
+Supports `subscriptions-transport-ws`. `graphql-ws` is also possible, but it is not natively compatible with Apollo Client/Server
 (i.e. all subscription services and clients would have to use the package for it to work). Alternatively, the stitching gateway could
 support a differing protocols for upstream services and clients.
 
