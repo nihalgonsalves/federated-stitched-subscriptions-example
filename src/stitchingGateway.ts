@@ -42,12 +42,12 @@ const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, varia
 };
 
 const getSubscriptionSchema = async (uriWithoutScheme: string): Promise<SubschemaConfig> => {
-  const subscriptionClient = new SubscriptionClient(`ws://${uriWithoutScheme}`, undefined, WebSocket);
-
   const subscriber: Subscriber = async (
     params: ExecutionParams,
   ) => {
     const { document, variables } = params;
+
+    const subscriptionClient = new SubscriptionClient(`ws://${uriWithoutScheme}`, undefined, WebSocket);
 
     return observableToAsyncIterable<any>(
       subscriptionClient.request(
