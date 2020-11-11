@@ -72,3 +72,4 @@ support differing protocols for upstream services and clients.
 - [ ] Client introspection - clients currently use the Apollo CLI, they shouldn't need to introspect from the stitched gateway to make this work.
 - [ ] Check about how open connections are handled when the schema is updated.
 - [ ] Schema validation - the stitched services should not conflict with the Federated graph or each other.
+- [ ] Test error handling
