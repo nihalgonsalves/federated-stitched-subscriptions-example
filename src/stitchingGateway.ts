@@ -2,9 +2,7 @@ import http from 'http';
 import fetch from 'node-fetch';
 import WebSocket from 'ws';
 
-import express, {
-  Router, NextFunction, Request, Response,
-} from 'express';
+import express, { Router } from 'express';
 import bodyParser from 'body-parser';
 
 import { introspectSchema } from '@graphql-tools/wrap';
@@ -49,7 +47,7 @@ const getSubscriptionSchema = async (uriWithoutScheme: string): Promise<Subschem
 
     const subscriptionClient = new SubscriptionClient(`ws://${uriWithoutScheme}`, undefined, WebSocket);
 
-    return observableToAsyncIterable<any>(
+    return observableToAsyncIterable<never>(
       subscriptionClient.request(
         {
           query: print(document),
@@ -139,13 +137,13 @@ class SubscriptionGateway {
     });
   }
 
-  requestHandler(req: Request, res: Response, next: NextFunction) {
+  requestHandler(...params: Parameters<Router>) {
     if (this.apolloMiddleware) {
-      // @ts-expect-error WIP
-      this.apolloMiddleware(req, res, next);
+      this.apolloMiddleware(...params);
     } else {
-      // @ts-expect-error WIP
-      res.status(500).json({ error: 'Not Initialized' });
+      const [req, res] = params;
+
+      res.status(500).json({ error: 'Uninitialized' });
     }
   }
 
