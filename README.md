@@ -28,9 +28,13 @@ support differing protocols for upstream services and clients.
    yarn start:services
    # In another
    yarn start:gateway
+   # In another
+   yarn start:client
    ```
 
 2. The gateway playground can be accessed at <http://localhost:3000/playground>
+
+3. The client example can be accessed at <http://localhost:5000/>
 
 ## Sample queries
 

@@ -1,0 +1,23 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "main": "",
+  "license": "Unlicense",
+  "author": "Nihal Gonsalves <nihal@nihalgonsalves.com>",
+  "scripts": {
+    "dev": "next --port 5000",
+    "start": "next start --port 5000",
+    "build": "tsc && next build",
+    "export": "yarn build && next export",
+    "serve": "serve ./out/ --listen 5000"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.2.5",
+    "next": "^10.0.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.56"
+  }
+}

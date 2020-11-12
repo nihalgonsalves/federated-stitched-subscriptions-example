@@ -6,6 +6,7 @@
   "license": "Unlicense",
   "author": "Nihal Gonsalves <nihal@nihalgonsalves.com>",
   "scripts": {
+    "start:client": "yarn workspace client dev",
     "start:gateway": "yarn workspace server run-p --print-label gateway:*",
     "start:services": "yarn workspace server run-p --print-label service:*",
     "build": "tsc",
