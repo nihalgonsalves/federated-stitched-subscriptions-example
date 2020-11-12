@@ -11,6 +11,8 @@
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
     "import/prefer-default-export": "off",
+    // monorepo false positives
+    "import/no-extraneous-dependencies": "off",
     "no-console": "off"
   }
 }
