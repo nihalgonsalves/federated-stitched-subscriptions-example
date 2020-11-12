@@ -23,12 +23,12 @@ support differing protocols for upstream services and clients.
 
 1. Start
 
-    ```sh
-    # In one terminal
-    yarn start:services
-    # In another
-    yarn start:gateway
-    ```
+   ```sh
+   # In one terminal
+   yarn start:services
+   # In another
+   yarn start:gateway
+   ```
 
 2. The gateway playground can be accessed at <http://localhost:3000/playground>
 
@@ -36,33 +36,32 @@ support differing protocols for upstream services and clients.
 
 1. Federated query
 
-    ```graphql
-    {
-      vehicles {
-        id
-        currentlyOpenedBy {
-          id
-        }
-      }
-    }
-
-    ```
+   ```graphql
+   {
+     vehicles {
+       id
+       currentlyOpenedBy {
+         id
+       }
+     }
+   }
+   ```
 
 2. Subscription query (a)
 
-    ```graphql
-    subscription {
-      uptimeSeconds
-    }
-    ```
+   ```graphql
+   subscription {
+     uptimeSeconds
+   }
+   ```
 
 3. Subscription query (b)
 
-    ```graphql
-    subscription {
-      dateTime
-    }
-    ```
+   ```graphql
+   subscription {
+     dateTime
+   }
+   ```
 
 ## TODO
 

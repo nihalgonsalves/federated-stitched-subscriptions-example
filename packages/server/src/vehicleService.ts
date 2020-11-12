@@ -44,9 +44,7 @@ const resolvers = {
     vehicles: () => vehicles,
   },
   Employee: {
-    currentVehicle: ({ id }: { id: string }) => vehicles.find(
-      (v) => v.currentlyOpenedBy?.id === id,
-    ),
+    currentVehicle: ({ id }: { id: string }) => vehicles.find((v) => v.currentlyOpenedBy?.id === id),
   },
 };
 

@@ -20,7 +20,7 @@ const pubSub = new PubSub();
 let uptimeSeconds = 0;
 
 setInterval(() => {
-  pubSub.publish(Event.UPTIME_UPDATED, uptimeSeconds += 1);
+  pubSub.publish(Event.UPTIME_UPDATED, (uptimeSeconds += 1));
 }, 1000);
 
 const resolvers = {

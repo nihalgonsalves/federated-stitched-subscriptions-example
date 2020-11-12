@@ -8,9 +8,7 @@ import bodyParser from 'body-parser';
 import { introspectSchema } from '@graphql-tools/wrap';
 import { stitchSchemas } from '@graphql-tools/stitch';
 import { observableToAsyncIterable } from '@graphql-tools/utils';
-import type {
-  SubschemaConfig, AsyncExecutor, Subscriber, ExecutionParams,
-} from '@graphql-tools/delegate';
+import type { SubschemaConfig, AsyncExecutor, Subscriber, ExecutionParams } from '@graphql-tools/delegate';
 
 import { GraphQLSchema, print } from 'graphql';
 import { ApolloServer } from 'apollo-server-express';
@@ -25,7 +23,7 @@ const PORT = PORTS.stitchingGateway;
 
 const app = express();
 
-const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, variables }) => {
+const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, variables, context }) => {
   const query = print(document);
 
   const fetchResult = await fetch(uri, {
@@ -40,20 +38,18 @@ const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, varia
 };
 
 const getSubscriptionSchema = async (uriWithoutScheme: string): Promise<SubschemaConfig> => {
-  const subscriber: Subscriber = async (
-    params: ExecutionParams,
-  ) => {
+  const subscriber: Subscriber = async (params: ExecutionParams) => {
+    console.log(params);
+
     const { document, variables } = params;
 
     const subscriptionClient = new SubscriptionClient(`ws://${uriWithoutScheme}`, undefined, WebSocket);
 
     return observableToAsyncIterable<never>(
-      subscriptionClient.request(
-        {
-          query: print(document),
-          variables,
-        },
-      ),
+      subscriptionClient.request({
+        query: print(document),
+        variables,
+      }),
     );
   };
 
@@ -74,21 +70,23 @@ const getServer = async (gatewaySchema: GraphQLSchema) => {
   };
 
   const subscriptionSchemas: SubschemaConfig[] = await Promise.all(
-    [
-      `localhost:${PORTS.datetime}/graphql`,
-      `localhost:${PORTS.uptime}/graphql`,
-    ].map(getSubscriptionSchema),
+    [`localhost:${PORTS.datetime}/graphql`, `localhost:${PORTS.uptime}/graphql`].map(getSubscriptionSchema),
   );
 
   const schema = stitchSchemas({
-    subschemas: [
-      gatewaySubSchema,
-      ...subscriptionSchemas,
-    ],
+    subschemas: [gatewaySubSchema, ...subscriptionSchemas],
   });
 
   return new ApolloServer({
     schema,
+    context: ({ req, connection }) => ({
+      // @ts-ignore WIP
+      headers: req?.headers,
+      connection,
+    }),
+    subscriptions: {
+      onConnect: (connectionParams) => connectionParams,
+    },
   });
 };
 
@@ -130,7 +128,9 @@ class SubscriptionGateway {
         await oldServer.stop();
         console.log('🟠 Old server instance stopped');
       } else {
-        console.log(`🚀 Server ready at http://localhost:${PORT}${this.server?.graphqlPath} & ws://localhost:${PORT}${this.server?.subscriptionsPath}`);
+        console.log(
+          `🚀 Server ready at http://localhost:${PORT}${this.server?.graphqlPath} & ws://localhost:${PORT}${this.server?.subscriptionsPath}`,
+        );
 
         this.httpServer.listen(PORT, () => {});
       }
