@@ -30,6 +30,8 @@ const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, varia
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      // @ts-expect-error WIP
+      ...context?.headers,
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -39,11 +41,20 @@ const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, varia
 
 const getSubscriptionSchema = async (uriWithoutScheme: string): Promise<SubschemaConfig> => {
   const subscriber: Subscriber = async (params: ExecutionParams) => {
-    console.log(params);
+    const { document, variables, context } = params;
+    const { context: connectionContext } = context.connection;
 
-    const { document, variables } = params;
-
-    const subscriptionClient = new SubscriptionClient(`ws://${uriWithoutScheme}`, undefined, WebSocket);
+    const subscriptionClient = new SubscriptionClient(
+      `ws://${uriWithoutScheme}`,
+      {
+        lazy: true,
+        connectionParams: connectionContext,
+        reconnect: true,
+        reconnectionAttempts: 5,
+        inactivityTimeout: 30,
+      },
+      WebSocket,
+    );
 
     return observableToAsyncIterable<never>(
       subscriptionClient.request({
@@ -80,7 +91,6 @@ const getServer = async (gatewaySchema: GraphQLSchema) => {
   return new ApolloServer({
     schema,
     context: ({ req, connection }) => ({
-      // @ts-ignore WIP
       headers: req?.headers,
       connection,
     }),

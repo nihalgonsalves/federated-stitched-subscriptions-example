@@ -65,7 +65,7 @@ support differing protocols for upstream services and clients.
 
 ## TODO
 
-- [ ] Authentication
+- [x] Authentication - headers & connection params are passed through
 - [x] Automatic schema loading for federated services. Since the service now sits in front of the regular Apollo Gateway, it needs to update. It also uses the Apollo Studio managed schema updates, and hot-swaps the stitched server with new updates.
 - [ ] Reloading/Managed Graph for schema changes in stitched subscription services. Introspection is not suitable for production.
 - [ ] Client introspection - clients currently use the Apollo CLI, they shouldn't need to introspect from the stitched gateway to make this work.

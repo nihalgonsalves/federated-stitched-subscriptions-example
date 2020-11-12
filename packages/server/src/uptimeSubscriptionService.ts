@@ -38,6 +38,9 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  subscriptions: {
+    onConnect: (connectionParams) => ({ connectionParams }),
+  },
 });
 
 server.listen(PORTS.uptime).then(({ url, subscriptionsUrl }) => {

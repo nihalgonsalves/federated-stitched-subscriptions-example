@@ -28,7 +28,7 @@ const resolvers = {
   Subscription: {
     dateTime: {
       subscribe: () => pubSub.asyncIterator(Event.DATETIME_UPDATED),
-      resolve: (seconds: number) => seconds,
+      resolve: (dateTime: string) => dateTime,
     },
   },
 };
@@ -36,11 +36,9 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  tracing: true,
-  cors: true,
-  introspection: true,
-  playground: true,
-  debug: true,
+  subscriptions: {
+    onConnect: (connectionParams) => ({ connectionParams }),
+  },
 });
 
 server.listen(PORTS.datetime).then(({ url, subscriptionsUrl }) => {
