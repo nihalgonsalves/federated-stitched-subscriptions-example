@@ -4,8 +4,6 @@ import { NextPage } from 'next';
 const IndexPage: NextPage = () => {
   const queryResult = useQuery(gql`
     query Test {
-      uptimeSeconds
-      dateTime
       vehicles {
         id
         label

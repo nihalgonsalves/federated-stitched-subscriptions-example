@@ -7,9 +7,9 @@ Supports `subscriptions-transport-ws`. `graphql-ws` is also possible, but it is 
 support differing protocols for upstream services and clients.
 
 ```
------------------------[apollo client]------------------------
-------------------------------|-------------------------------
-----[••••••••••schema stitching gateway gateway••••••••••]----
+------[******* apollo client ******* ]------------------------
+-------|----------------------------|-------------------------
+-------|-----------------------[schema stitching gateway]-----
 -------|----------------------------|---------------|---------
 ----[federation gateway]------[dateTimeSvc]----[uptimeSvc]----
 -------|---------|--------------------------------------------
@@ -17,7 +17,9 @@ support differing protocols for upstream services and clients.
 ```
 
 - `vehicle`/`employee` are regular Federated services, aggregated by the Apollo Federation Gateway
-- `datetime`/`uptime` are two subscription-only services (though they can also support queries/mutations like regular stitched services - it would complicate things, however). They emit the time / server uptime respectively every second.
+- `datetime`/`uptime` are two subscription-only services. They emit the time / server uptime respectively every second.
+- For simplicity, only subscriptions can be used via the subscription services. It is also possible to make the stitching gateway
+  sit in front of the federation gateway as well (simply by adding another subschema config - can be loaded directly by creating a new gateway instance and awaiting `.load()` and defining `onSchemaChange`), but this adds another bottleneck and increases complexity.
 
 ## Running
 
@@ -32,9 +34,11 @@ support differing protocols for upstream services and clients.
    yarn start:client
    ```
 
-2. The gateway playground can be accessed at <http://localhost:3000/playground>
+2. The federation gateway playground can be accessed at <http://localhost:4000/>
 
-3. The client example can be accessed at <http://localhost:5000/>
+3. The subscription gateway playground can be accessed at <http://localhost:3000/>
+
+4. The client example can be accessed at <http://localhost:5000/>
 
 ## Sample queries
 
@@ -70,9 +74,8 @@ support differing protocols for upstream services and clients.
 ## TODO
 
 - [x] Authentication - headers & connection params are passed through
-- [x] Automatic schema loading for federated services. Since the service now sits in front of the regular Apollo Gateway, it needs to update. It also uses the Apollo Studio managed schema updates, and hot-swaps the stitched server with new updates.
-- [ ] Reloading/Managed Graph for schema changes in stitched subscription services. Introspection is not suitable for production.
-- [ ] Client introspection - clients currently use the Apollo CLI, they shouldn't need to introspect from the stitched gateway to make this work.
+- [ ] Reloading/Managed Graph for subscription services. Introspection is not suitable for production.
+- [ ] Client introspection - clients currently use the Apollo CLI for the federated schema, how do they get the subscription schema without introspection?
 - [ ] Check about how open connections are handled when the schema is updated.
 - [ ] Schema validation - the stitched services should not conflict with the Federated graph or each other.
 - [ ] Test error handling

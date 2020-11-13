@@ -1,37 +1,24 @@
-import http from 'http';
 import fetch from 'node-fetch';
 import WebSocket from 'ws';
-
-import express, { Router } from 'express';
-import bodyParser from 'body-parser';
 
 import { introspectSchema } from '@graphql-tools/wrap';
 import { stitchSchemas } from '@graphql-tools/stitch';
 import { observableToAsyncIterable } from '@graphql-tools/utils';
 import type { SubschemaConfig, AsyncExecutor, Subscriber, ExecutionParams } from '@graphql-tools/delegate';
 
-import { GraphQLSchema, print } from 'graphql';
-import { ApolloServer } from 'apollo-server-express';
+import { print } from 'graphql';
+import { ApolloServer } from 'apollo-server';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
-import type { ApolloGateway } from '@apollo/gateway';
-import expressPlayground from 'graphql-playground-middleware-express';
 
-import { getGateway } from './getGateway';
 import { PORTS } from './config';
 
-const PORT = PORTS.stitchingGateway;
-
-const app = express();
-
-const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, variables, context }) => {
+const getHTTPExecutor = (uri: string): AsyncExecutor => async ({ document, variables }) => {
   const query = print(document);
 
   const fetchResult = await fetch(uri, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // @ts-expect-error WIP
-      ...context?.headers,
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -74,21 +61,14 @@ const getSubscriptionSchema = async (uriWithoutScheme: string): Promise<Subschem
   };
 };
 
-const getServer = async (gatewaySchema: GraphQLSchema) => {
-  const gatewaySubSchema: SubschemaConfig = {
-    schema: gatewaySchema,
-    executor: getHTTPExecutor(`http://localhost:${PORTS.federationGateway}/graphql`),
-  };
-
-  const subscriptionSchemas: SubschemaConfig[] = await Promise.all(
-    [`localhost:${PORTS.datetime}/graphql`, `localhost:${PORTS.uptime}/graphql`].map(getSubscriptionSchema),
-  );
-
+const main = async () => {
   const schema = stitchSchemas({
-    subschemas: [gatewaySubSchema, ...subscriptionSchemas],
+    subschemas: await Promise.all(
+      [`localhost:${PORTS.datetime}/graphql`, `localhost:${PORTS.uptime}/graphql`].map(getSubscriptionSchema),
+    ),
   });
 
-  return new ApolloServer({
+  const server = new ApolloServer({
     schema,
     context: ({ req, connection }) => ({
       headers: req?.headers,
@@ -98,68 +78,11 @@ const getServer = async (gatewaySchema: GraphQLSchema) => {
       onConnect: (connectionParams) => connectionParams,
     },
   });
+
+  server.listen(PORTS.stitchingGateway).then(({ url, subscriptionsUrl }) => {
+    // eslint-disable-next-line no-console
+    console.log(`🚀  Server ready at ${url} & ${subscriptionsUrl}`);
+  });
 };
 
-class SubscriptionGateway {
-  private httpServer: http.Server;
-
-  private gateway: ApolloGateway;
-
-  private server: ApolloServer | undefined;
-
-  private apolloMiddleware: Router | undefined;
-
-  constructor() {
-    app.use(bodyParser.json());
-    app.use(this.requestHandler.bind(this));
-
-    app.get(
-      '/playground',
-      expressPlayground({
-        endpoint: `http://localhost:${PORT}/graphql`,
-      }),
-    );
-
-    this.httpServer = http.createServer(app);
-
-    this.gateway = getGateway();
-
-    this.gateway.onSchemaChange(async (schema) => {
-      console.log('🟡 Received Apollo Gateway schema change notification. Hot-reloading server.');
-
-      const oldServer = this.server;
-
-      this.server = await getServer(schema);
-      this.server.installSubscriptionHandlers(this.httpServer);
-      this.apolloMiddleware = this.server.getMiddleware();
-
-      if (oldServer) {
-        console.log('✅ Schema reloaded');
-        await oldServer.stop();
-        console.log('🟠 Old server instance stopped');
-      } else {
-        console.log(
-          `🚀 Server ready at http://localhost:${PORT}${this.server?.graphqlPath} & ws://localhost:${PORT}${this.server?.subscriptionsPath}`,
-        );
-
-        this.httpServer.listen(PORT, () => {});
-      }
-    });
-  }
-
-  requestHandler(...params: Parameters<Router>) {
-    if (this.apolloMiddleware) {
-      this.apolloMiddleware(...params);
-    } else {
-      const [req, res] = params;
-
-      res.status(500).json({ error: 'Uninitialized' });
-    }
-  }
-
-  async load() {
-    await this.gateway.load();
-  }
-}
-
-new SubscriptionGateway().load();
+main();
