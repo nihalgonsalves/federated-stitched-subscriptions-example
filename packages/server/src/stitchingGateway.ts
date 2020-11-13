@@ -79,10 +79,9 @@ const main = async () => {
     },
   });
 
-  server.listen(PORTS.stitchingGateway).then(({ url, subscriptionsUrl }) => {
-    // eslint-disable-next-line no-console
-    console.log(`🚀  Server ready at ${url} & ${subscriptionsUrl}`);
-  });
+  const { url, subscriptionsUrl } = await server.listen(PORTS.stitchingGateway);
+
+  console.log(`🚀  Server ready at ${url} & ${subscriptionsUrl}`);
 };
 
 main();
