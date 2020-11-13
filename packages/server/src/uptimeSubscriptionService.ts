@@ -23,23 +23,18 @@ setInterval(() => {
   pubSub.publish(Event.UPTIME_UPDATED, (uptimeSeconds += 1));
 }, 1000);
 
-const resolvers = {
-  Query: {
-    uptimeSeconds: () => uptimeSeconds,
-  },
-  Subscription: {
-    uptimeSeconds: {
-      subscribe: () => pubSub.asyncIterator(Event.UPTIME_UPDATED),
-      resolve: (seconds: number) => seconds,
-    },
-  },
-};
-
 const server = new ApolloServer({
   typeDefs,
-  resolvers,
-  subscriptions: {
-    onConnect: (connectionParams) => ({ connectionParams }),
+  resolvers: {
+    Query: {
+      uptimeSeconds: () => uptimeSeconds,
+    },
+    Subscription: {
+      uptimeSeconds: {
+        subscribe: () => pubSub.asyncIterator(Event.UPTIME_UPDATED),
+        resolve: (seconds: number) => seconds,
+      },
+    },
   },
 });
 

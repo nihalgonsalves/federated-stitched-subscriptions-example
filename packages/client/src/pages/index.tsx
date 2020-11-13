@@ -44,6 +44,14 @@ const IndexPage: NextPage = () => {
     `,
   );
 
+  const subscriptionCResult = useSubscription(
+    gql`
+      subscription {
+        context
+      }
+    `,
+  );
+
   return (
     <>
       <pre>
@@ -51,6 +59,7 @@ const IndexPage: NextPage = () => {
           {
             subscriptionAResult,
             subscriptionBResult,
+            subscriptionCResult,
             queryResult: { data: queryResult.data, loading: queryResult.loading, error: queryResult.error },
           },
           null,

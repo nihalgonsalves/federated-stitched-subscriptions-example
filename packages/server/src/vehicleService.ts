@@ -39,16 +39,19 @@ const typeDefs = gql`
   }
 `;
 
-const resolvers = {
-  Query: {
-    vehicles: () => vehicles,
+const schema = buildFederatedSchema([
+  {
+    typeDefs,
+    resolvers: {
+      Query: {
+        vehicles: () => vehicles,
+      },
+      Employee: {
+        currentVehicle: ({ id }: { id: string }) => vehicles.find((v) => v.currentlyOpenedBy?.id === id),
+      },
+    },
   },
-  Employee: {
-    currentVehicle: ({ id }: { id: string }) => vehicles.find((v) => v.currentlyOpenedBy?.id === id),
-  },
-};
-
-const schema = buildFederatedSchema([{ typeDefs, resolvers }]);
+]);
 
 const server = new ApolloServer({
   schema,

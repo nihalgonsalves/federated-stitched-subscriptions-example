@@ -34,17 +34,20 @@ const typeDefs = gql`
   }
 `;
 
-const resolvers = {
-  Query: {
-    employees: () => ({ employees, count: employees.length }),
-    employeeById: (root: unknown, { id }: any) => employees.find((e) => e.id === id),
+const schema = buildFederatedSchema([
+  {
+    typeDefs,
+    resolvers: {
+      Query: {
+        employees: () => ({ employees, count: employees.length }),
+        employeeById: (root, { id }) => employees.find((e) => e.id === id),
+      },
+      Employee: {
+        __resolveReference: ({ id }) => employees.find((e) => e.id === id),
+      },
+    },
   },
-  Employee: {
-    __resolveReference: ({ id }: any) => employees.find((e) => e.id === id),
-  },
-};
-
-const schema = buildFederatedSchema([{ typeDefs, resolvers }]);
+]);
 
 const server = new ApolloServer({
   schema,

@@ -11,6 +11,7 @@
     "service:employee": "ts-node-dev src/employeeService.ts",
     "service:uptime": "ts-node-dev src/uptimeSubscriptionService.ts",
     "service:datetime": "ts-node-dev src/datetimeSubscriptionService.ts",
+    "service:context": "ts-node-dev src/contextSubscriptionService.ts",
     "build": "tsc",
     "test": "exit 0",
     "lint": "eslint --ext .js,.ts src/**/*"

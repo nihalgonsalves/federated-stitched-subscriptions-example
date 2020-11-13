@@ -21,23 +21,18 @@ setInterval(() => {
   pubSub.publish(Event.DATETIME_UPDATED, new Date().toISOString());
 }, 1000);
 
-const resolvers = {
-  Query: {
-    dateTime: () => new Date().toISOString(),
-  },
-  Subscription: {
-    dateTime: {
-      subscribe: () => pubSub.asyncIterator(Event.DATETIME_UPDATED),
-      resolve: (dateTime: string) => dateTime,
-    },
-  },
-};
-
 const server = new ApolloServer({
   typeDefs,
-  resolvers,
-  subscriptions: {
-    onConnect: (connectionParams) => ({ connectionParams }),
+  resolvers: {
+    Query: {
+      dateTime: () => new Date().toISOString(),
+    },
+    Subscription: {
+      dateTime: {
+        subscribe: () => pubSub.asyncIterator(Event.DATETIME_UPDATED),
+        resolve: (dateTime) => dateTime,
+      },
+    },
   },
 });
 
